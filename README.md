@@ -1,4 +1,20 @@
-# PowerShell Automation Lab
+# The Forge
+
+> **The workshop where The Realm's tools are shaped.**
+
+The Forge is The Realm's automation and tooling repository. It contains reusable PowerShell modules and administration patterns for turning repeatable infrastructure work into maintainable tools.
+
+Its current craft is the `MavLabTools` module, which supports Active Directory administration and can be deployed to the Windows lab environment on `DC1`.
+
+## Evolution
+
+The Forge will evolve from a working module lab into a dependable toolchain for The Realm: clearer module boundaries, safer state-aware functions, repeatable tests, documented deployment paths, and additional automation for the systems documented in The Keep and The Sky Hold.
+
+Automation should remain auditable, reversible where practical, and explicit about the environment it changes.
+
+---
+
+## PowerShell Automation Lab
 
 ## Project Overview
 
