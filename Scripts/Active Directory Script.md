@@ -30,7 +30,7 @@ $OU = "OU=$($Employee.Department),OU=Employees,DC=glasslab,DC=local"
 
 
 
-$Password = ConvertTo-SecureString "REDACTED" -AsPlainText -Force
+$Password = Read-Host "Initial password for new accounts" -AsSecureString
 
 
 
