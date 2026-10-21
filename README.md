@@ -8,6 +8,15 @@ The Forge is The Realm's automation and tooling repository. It contains reusable
 
 Its current craft is the `MavLabTools` module, which supports Active Directory administration and can be deployed to the Windows lab environment on `DC1`.
 
+## What's in here
+
+| Path | What it does |
+| --- | --- |
+| [`Modules/MavLabTools/MavLabTools.psm1`](./Modules/MavLabTools/MavLabTools.psm1) | `Get-LabUsers` and an idempotent `New-LabDepartment` for AD OUs |
+| [`Profile/MavLab.Profile.ps1`](./Profile/MavLab.Profile.ps1) | Lab variables and adds this repo's `Modules` folder to `$PSModulePath` |
+| [`Scripts/Secure-StorageAccounts.ps1`](./Scripts/Secure-StorageAccounts.ps1) | Azure Storage baseline (HTTPS only, TLS 1.2, no anonymous blob access) with `-WhatIf`. Write-up in [The Sky Hold](https://github.com/Lglass510/The_Sky_Hold/tree/main/Storage) |
+| [`Scripts/Active Directory Script.md`](./Scripts/Active%20Directory%20Script.md) | Points to the AD bulk onboarding script in [The Keep](https://github.com/Lglass510/The_Keep/tree/main/ActiveDirectory) |
+
 ## Evolution
 
 The Forge will evolve from a working module lab into a dependable toolchain for The Realm: clearer module boundaries, safer state-aware functions, repeatable tests, documented deployment paths, and additional automation for the systems documented in The Keep and The Sky Hold.
@@ -50,7 +59,7 @@ The primary goals of this lab were to:
 The PowerShell toolkit was developed locally and maintained in the lab Git repository.
 
 ```text
-C:\Projects\mavlab\PowerShell\Modules\MavLabTools
+C:\Projects\mavlab\PowerShell\Modules\MavLabTools   (the lab folder at the time; now this repo's Modules\MavLabTools)
 ```
 ![MavLab toolkit inside file structure](screenshots/mavlab_toolkit.png)
 
@@ -90,9 +99,10 @@ Get-LabUsers
 New-LabDepartment
 ```
 
-The module exports the functions through:
+The module exports both functions:
 
 ```powershell
+Export-ModuleMember -Function Get-LabUsers
 Export-ModuleMember -Function New-LabDepartment
 ```
 
@@ -115,7 +125,7 @@ A persistent PowerShell remoting session was created to establish communication 
 The session was created using:
 
 ```powershell
-$Session = New-PSSession -VMName "DC1" -Credential (Get-Credential)
+$Session = New-PSSession -VMName "Glass-DC1" -Credential (Get-Credential)
 ```
 
 The session was verified with:
@@ -233,10 +243,10 @@ This confirmed that the function was executing remotely against the domain contr
 
 `New-LabDepartment` was created to automate the creation of department Organizational Units within the `Employees` OU.
 
-The initial version accepted a mandatory department parameter:
+The initial version accepted a mandatory department parameter (`New-LabDepartment -Department "IT"`). The current version also takes `-ParentOU` (`Employees` or `Managers`), so the same function builds both OU trees:
 
 ```powershell
-New-LabDepartment -Department "IT"
+New-LabDepartment -Department "IT" -ParentOU Employees
 ```
 
 The function used:
@@ -269,7 +279,8 @@ The function was then improved to check whether the requested department already
 The updated logic constructs the department's Distinguished Name:
 
 ```powershell
-$DepartmentOU = "OU=$Department,$EmployeesOU"
+$DepartmentOU = "OU=$Department,$EmployeesOU"      # version tested below
+# current module: $DepartmentOU = "OU=$Department,OU=$ParentOU,DC=glasslab,DC=local"
 ```
 
 It then checks Active Directory for the existing OU.
@@ -294,6 +305,8 @@ catch {
 This introduced the concept of **idempotent automation**.
 
 ### Tested Behavior
+
+These tests were run on the version before `-ParentOU` was added. With the current module, add `-ParentOU Employees`.
 
 Existing department:
 
